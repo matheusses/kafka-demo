@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+confluent-kafka
+pydantic
+pydantic-settings
+python-dotenv
+requests
+debugpy

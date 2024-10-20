@@ -42,20 +42,38 @@ services:
     extra_hosts:
       - "host.docker.internal:172.17.0.1"
 
-  app:
-    build: .
-    container_name: python-app
+  app-producer:
+    build:
+      context: ./kafka-app/producer
+      dockerfile: Dockerfile
+    container_name: python-app-producer
     ports:
       - "8000:8000"
-      - "5678:5678"  # Debugpy port
     depends_on:
       - kafka
     environment:
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       PYTHONUNBUFFERED: 1
     volumes:
-      - ./app:/app
-    command: ["sh", "-c", "python -m debugpy --wait-for-client --listen 0.0.0.0:5678 -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload"]  
+      - ./kafka-app/producer/app:/app
+    command: ["sh", "-c", "python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload"]
     extra_hosts:
       - "host.docker.internal:172.17.0.1"
-
+    
+  app-consumer:
+    build:
+      context: ./kafka-app/consumer
+      dockerfile: Dockerfile
+    container_name: python-app-consumer
+    ports:
+      - "8001:8001"
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      PYTHONUNBUFFERED: 1
+    volumes:
+      - ./kafka-app/consumer/app:/app
+    command: ["sh", "-c", "python -m uvicorn main:app --host 0.0.0.0 --port 8001 --reload"]
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"
